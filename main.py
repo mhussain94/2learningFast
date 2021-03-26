@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, status, Response
+from fastapi import FastAPI, Depends, status, Response, HTTPException
 import uvicorn
 from pydantic import BaseModel
 import schemas, model #Importing from the same directory
@@ -22,14 +22,24 @@ def get_db():
 def create(request: schemas.Blog, db: Session = Depends(get_db)):
     new_blog = model.Blog(title = request.title, body = request.body)
     db.add(new_blog) #add the blog
-    db.commit()
+    db.commit() # to persist changes on the db
     db.refresh(new_blog)
     return new_blog #return the blog
+
+@app.delete('/blog', status_code=204)
+def delete(id, db: Session = Depends(get_db)):
+    blog = db.query(model.Blog).filter(model.Blog.id == id).delete(synchronize_session=False)
+    db.commit()
+    if not blog:
+        raise HTTPException(status_code=400, detail=f'Blog with the id : {id} not found to be deleted') #does above 2 in same line
+    return {'done'}
+
 
 @app.get('/blog')
 def get_blogs(db: Session = Depends(get_db)):
     blogs = db.query(model.Blog).all() #model.Blog is the tablename!
     return blogs
+
 
 @app.get('/blog/{id}', status_code=200)
 def get_single_blog(id,response: Response, db: Session = Depends(get_db)):
@@ -37,8 +47,9 @@ def get_single_blog(id,response: Response, db: Session = Depends(get_db)):
     if blog != None:
         return blog
     elif blog == None:
-        response.status_code =400 #To generate custom responses!!, need to provide response:Response in params
-        return 'no blog found'
+        #response.status_code =400 #To generate custom responses!!, need to provide response:Response in params
+        #return 'no blog found'
+        raise HTTPException(status_code=400, detail=f'Blog with the id : {id} not found') #does above 2 in same line
 
 if __name__ == '__main__': 
     uvicorn.run("main:app", port=8080, host='0.0.0.0', reload=True)
