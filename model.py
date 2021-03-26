@@ -5,6 +5,7 @@ from database import Base
 
 
 #Model for blog class for DB
+#Creating tables
 class Blog(Base):
     __tablename__ = 'blogs' #defining table name
 
