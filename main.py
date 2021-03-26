@@ -1,15 +1,17 @@
 from fastapi import FastAPI
 import uvicorn
 from pydantic import BaseModel
+import schemas, model #Importing from the same directory
+from database import SessionLocal, engine
+
+
 
 app = FastAPI()
+model.Base.metadata.create_all(bind=engine) #intiating the db, to create the table
 
-class Blog(BaseModel):
-    title: str
-    body: str  
 
 @app.post('/blog')
-def create(request: Blog):
+def create(request: schemas.Blog):
     return {'data' : f'blog created with title : {request.title}, with body : {request.body}'}
 
 if __name__ == '__main__': 
