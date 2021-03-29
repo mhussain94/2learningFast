@@ -34,6 +34,16 @@ def delete(id, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail=f'Blog with the id : {id} not found to be deleted') #does above 2 in same line
     return {'done'}
 
+@app.put('/blog/{id}', status_code=202)
+def update_blog(id, request: schemas.Blog, db: Session = Depends(get_db)):
+    blog = db.query(model.Blog).filter(model.Blog.id == id) #query to check if blog exists
+    if not blog.first():
+        raise HTTPException(status_code= 404, detail=f'Blog with the id : {id} not found')
+    blog.update({'title' : request.title, 'body': request.body}, synchronize_session=False) #query to update blog
+    db.commit()
+    return 'updated'
+    
+
 
 @app.get('/blog')
 def get_blogs(db: Session = Depends(get_db)):
