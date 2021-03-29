@@ -33,3 +33,8 @@ class ShowBlog(Blog): #extending Blog pydantic model
     title: str
     body:  str
     creator: ShowUser #to get the name and emial of the user in the response of getblog
+
+
+class Login(BaseModel):
+    username : str
+    password: str
