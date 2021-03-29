@@ -21,7 +21,7 @@ def get_db():
 #Depends to create connection to db by creating a get_db function
 @app.post('/blog', status_code=201, tags=["Blog Methods"]) #status code for something created, tags for grouping on swagger
 def create(request: schemas.Blog, db: Session = Depends(get_db)):
-    new_blog = model.Blog(title = request.title, body = request.body)
+    new_blog = model.Blog(title = request.title, body = request.body, user_id = 1)
     db.add(new_blog) #add the blog
     db.commit() # to persist changes on the db
     db.refresh(new_blog)
@@ -64,13 +64,22 @@ def get_single_blog(id,response: Response, db: Session = Depends(get_db)):
 
 
 
-@app.post('/user', tags=["User Methods"])
+@app.post('/user', response_model= schemas.ShowUser, tags=["User Methods"])
 def create_user(request: schemas.User, db: Session = Depends(get_db)):
     new_user = model.User(name=request.name, email=request.email, password=hashing.Hash.bcrypt(request.password)) #password input is the hashedPassword now from hashing schema.hash class. bcrypt method
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
     return new_user
+
+@app.get('/user/{id}', response_model= schemas.ShowUser, tags=["User Methods"])
+def get_user(id:int,response: Response , db: Session = Depends(get_db)):
+    user = db.query(model.User).filter(model.User.id == id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail=f'User with the id : {id} not found')
+    return user
+
+
 
 if __name__ == '__main__': 
     uvicorn.run("main:app", port=8080, host='0.0.0.0', reload=True)
