@@ -1,11 +1,10 @@
 from fastapi import FastAPI, Depends, status, Response, HTTPException
 import uvicorn
 from pydantic import BaseModel
-import schemas, model #Importing from the same directory
+import schemas, model, hashing #Importing from the same directory
 from database import SessionLocal, engine
 from sqlalchemy.orm import Session
 from typing import List
-from passlib.context import CryptContext
 
 
 app = FastAPI()
@@ -65,13 +64,9 @@ def get_single_blog(id,response: Response, db: Session = Depends(get_db)):
 
 
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-
 @app.post('/user', tags=["User Methods"])
 def create_user(request: schemas.User, db: Session = Depends(get_db)):
-    hashedPassword = pwd_context.hash(request.password)
-    new_user = model.User(name=request.name, email=request.email, password=hashedPassword)
+    new_user = model.User(name=request.name, email=request.email, password=hashing.Hash.bcrypt(request.password)) #password input is the hashedPassword now from hashing schema.hash class. bcrypt method
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
