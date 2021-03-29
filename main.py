@@ -4,6 +4,7 @@ from pydantic import BaseModel
 import schemas, model #Importing from the same directory
 from database import SessionLocal, engine
 from sqlalchemy.orm import Session
+from typing import List
 
 
 app = FastAPI()
@@ -45,13 +46,13 @@ def update_blog(id, request: schemas.Blog, db: Session = Depends(get_db)):
     
 
 
-@app.get('/blog')
+@app.get('/blog', response_model = List[schemas.ShowBlog])
 def get_blogs(db: Session = Depends(get_db)):
     blogs = db.query(model.Blog).all() #model.Blog is the tablename!
     return blogs
 
 
-@app.get('/blog/{id}', status_code=200)
+@app.get('/blog/{id}', status_code=200, response_model=schemas.ShowBlog)
 def get_single_blog(id,response: Response, db: Session = Depends(get_db)):
     blog = db.query(model.Blog).filter(model.Blog.id == id).first()
     if blog != None:
