@@ -12,3 +12,12 @@ class Blog(Base):
     id = Column(Integer, primary_key=True)
     title = Column(String, index=True)
     body = Column(String, index=True)
+
+class User(Base):
+    __tablename__ = 'users' #defining table name
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String, index=True)
+    email = Column(String, index=True)
+    password = Column(String, index=True)
+

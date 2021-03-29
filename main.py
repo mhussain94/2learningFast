@@ -19,7 +19,7 @@ def get_db():
 
 
 #Depends to create connection to db by creating a get_db function
-@app.post('/blog', status_code=201) #status code for something created
+@app.post('/blog', status_code=201, tags=["Blog Methods"]) #status code for something created, tags for grouping on swagger
 def create(request: schemas.Blog, db: Session = Depends(get_db)):
     new_blog = model.Blog(title = request.title, body = request.body)
     db.add(new_blog) #add the blog
@@ -27,7 +27,7 @@ def create(request: schemas.Blog, db: Session = Depends(get_db)):
     db.refresh(new_blog)
     return new_blog #return the blog
 
-@app.delete('/blog', status_code=204)
+@app.delete('/blog', status_code=204, tags=["Blog Methods"])
 def delete(id, db: Session = Depends(get_db)):
     blog = db.query(model.Blog).filter(model.Blog.id == id).delete(synchronize_session=False)
     db.commit()
@@ -35,7 +35,7 @@ def delete(id, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail=f'Blog with the id : {id} not found to be deleted') #does above 2 in same line
     return {'done'}
 
-@app.put('/blog/{id}', status_code=202)
+@app.put('/blog/{id}', status_code=202, tags=["Blog Methods"])
 def update_blog(id, request: schemas.Blog, db: Session = Depends(get_db)):
     blog = db.query(model.Blog).filter(model.Blog.id == id) #query to check if blog exists
     if not blog.first():
@@ -46,13 +46,13 @@ def update_blog(id, request: schemas.Blog, db: Session = Depends(get_db)):
     
 
 
-@app.get('/blog', response_model = List[schemas.ShowBlog])
+@app.get('/blog', response_model = List[schemas.ShowBlog], tags=["Blog Methods"])
 def get_blogs(db: Session = Depends(get_db)):
     blogs = db.query(model.Blog).all() #model.Blog is the tablename!
     return blogs
 
 
-@app.get('/blog/{id}', status_code=200, response_model=schemas.ShowBlog)
+@app.get('/blog/{id}', status_code=200, response_model=schemas.ShowBlog, tags=["Blog Methods"])
 def get_single_blog(id,response: Response, db: Session = Depends(get_db)):
     blog = db.query(model.Blog).filter(model.Blog.id == id).first()
     if blog != None:
@@ -61,6 +61,15 @@ def get_single_blog(id,response: Response, db: Session = Depends(get_db)):
         #response.status_code =400 #To generate custom responses!!, need to provide response:Response in params
         #return 'no blog found'
         raise HTTPException(status_code=400, detail=f'Blog with the id : {id} not found') #does above 2 in same line
+
+
+@app.post('/user', tags=["User Methods"])
+def create_user(request: schemas.User, db: Session = Depends(get_db)):
+    new_user = model.User(name=request.name, email=request.email, password=request.password)
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return request
 
 if __name__ == '__main__': 
     uvicorn.run("main:app", port=8080, host='0.0.0.0', reload=True)

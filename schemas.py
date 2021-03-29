@@ -5,6 +5,11 @@ class Blog(BaseModel):
     title: str
     body: str  
 
+class User(BaseModel):
+    name: str
+    email: str  
+    password: str
+
 #Response schema
 
 class ShowBlog(Blog): #extending Blog pydantic model
