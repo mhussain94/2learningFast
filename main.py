@@ -5,6 +5,7 @@ import schemas, model #Importing from the same directory
 from database import SessionLocal, engine
 from sqlalchemy.orm import Session
 from typing import List
+from passlib.context import CryptContext
 
 
 app = FastAPI()
@@ -63,13 +64,18 @@ def get_single_blog(id,response: Response, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail=f'Blog with the id : {id} not found') #does above 2 in same line
 
 
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
 @app.post('/user', tags=["User Methods"])
 def create_user(request: schemas.User, db: Session = Depends(get_db)):
-    new_user = model.User(name=request.name, email=request.email, password=request.password)
+    hashedPassword = pwd_context.hash(request.password)
+    new_user = model.User(name=request.name, email=request.email, password=hashedPassword)
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
-    return request
+    return new_user
 
 if __name__ == '__main__': 
     uvicorn.run("main:app", port=8080, host='0.0.0.0', reload=True)
