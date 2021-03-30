@@ -13,7 +13,7 @@ router = APIRouter(
 )
 
 @router.get('/', response_model = List[schemas.ShowBlog])
-def get_blogs(db: Session = Depends(get_db), current_user: schemas.User= Depends(oauth2.get_current_user)):
+async def get_blogs(db: Session = Depends(get_db), current_user: schemas.User= Depends(oauth2.get_current_user)):
     return blogRepo.get_all(db) #function taken to repository/blog.py and now called here, and get current usr for authentication
 
 #Depends to create connection to db by creating a get_db function

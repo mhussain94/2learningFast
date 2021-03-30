@@ -26,13 +26,19 @@ class ShowUser(BaseModel):
     email: str
     blogs: List[Blog] = []
     class Config():
+        orm_mode = True # since response is orm, this for that internal error 500
+    
+class testUser(BaseModel): #user without password
+    name: str
+    email: str
+    class Config():
         orm_mode = True # since response is orm
     
 
 class ShowBlog(Blog): #extending Blog pydantic model
     title: str
     body:  str
-    creator: ShowUser #to get the name and emial of the user in the response of getblog
+    creator: testUser  #to get the name and emial of the user in the response of getblog
 
 
 class Login(BaseModel):
